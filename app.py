@@ -80,6 +80,23 @@ def render_brand() -> None:
     )
 
 
+def render_library(sources: list[dict[str, object]]) -> None:
+    """Lista los documentos indexados, enlazando los que se pueden abrir."""
+    pills: list[str] = []
+    for source in sources:
+        name = str(source["source"])
+        text = f"{name} · {source['chunks']} partes"
+        href = citation_href(name, None, STATIC_DIR)
+        if href:
+            pills.append(
+                f'<a class="source-pill source-pill--link" href="{href}" '
+                f'target="_blank" rel="noopener" title="Abrir {name}">{text}</a>'
+            )
+        else:
+            pills.append(f'<span class="source-pill">{text}</span>')
+    st.markdown(f'<div class="sp-library">{"".join(pills)}</div>', unsafe_allow_html=True)
+
+
 def render_chips(chips: list[str]) -> None:
     items = "".join(
         f'<span class="sp-chip"><span class="sp-chip__dot"></span>{chip}</span>' for chip in chips
@@ -205,11 +222,7 @@ with st.sidebar:
 
     sources = knowledge_base.list_sources()
     st.metric("Documentos indexados", len(sources))
-    for source in sources:
-        st.markdown(
-            f'<span class="source-pill">{source["source"]} · {source["chunks"]} partes</span>',
-            unsafe_allow_html=True,
-        )
+    render_library(sources)
 
     if startup_errors:
         with st.expander("Errores de indexación inicial"):

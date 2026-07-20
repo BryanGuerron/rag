@@ -212,20 +212,33 @@ code {
     color: var(--muted) !important;
 }
 
+.sp-library {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+}
+
 .source-pill {
     display: inline-block;
-    margin: 0.15rem 0.15rem 0 0;
-    padding: 0.25rem 0.6rem;
+    padding: 0.28rem 0.65rem;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: rgba(34, 211, 238, 0.06);
     font-size: 0.72rem;
     color: var(--muted);
-    transition: border-color 0.18s ease, color 0.18s ease;
+    transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
 
-.source-pill:hover {
-    border-color: var(--border-bright);
+/* Gana al subrayado global de <a>: la píldora ya se lee como elemento propio. */
+.source-pill--link {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+}
+
+.source-pill--link:hover {
+    border-color: var(--cyan);
+    background: rgba(34, 211, 238, 0.13);
     color: var(--text);
 }
 

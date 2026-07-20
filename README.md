@@ -41,6 +41,7 @@ reutilizan Chroma y no vuelven a procesar archivos sin cambios.
 | Sin evidencia | Informa que no encontró la respuesta y solicita autorización |
 | Fuente externa | Consulta la web solo después de pulsar **Buscar en la web** y muestra enlaces |
 | Verificación | Cada cita enlaza al documento y lo abre en la página exacta citada |
+| Biblioteca | Los documentos listados en la barra lateral se abren con un clic |
 | Persistencia | Guarda documentos, manifiesto e índice vectorial en `data/` |
 | Límites de cuota | Divide los embeddings en lotes y reintenta con espera creciente ante un 429 |
 
