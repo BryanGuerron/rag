@@ -11,7 +11,8 @@ from rag_alura.documents import DocumentProcessingError, save_uploaded_file, sup
 from rag_alura.knowledge_base import KnowledgeBase
 from rag_alura.web_search import WebSearchError
 
-COMPANY = "Santos Pegasus Soluciones"
+# Empresa ficticia del corpus de demostración, no la autoría de la aplicación.
+COMPANY = "Santo Pegasus Soluciones"
 PRODUCT = "Archivo Vivo"
 THEME_PATH = Path(__file__).parent / "assets" / "theme.css"
 
@@ -19,7 +20,7 @@ THEME_PATH = Path(__file__).parent / "assets" / "theme.css"
 # Markdown la trataría como bloque de código en lugar de HTML.
 BRAND_MARK = """
 <svg class="sp-brand__mark" width="34" height="34" viewBox="0 0 34 34" fill="none" role="img"
- aria-label="Santos Pegasus Soluciones">
+ aria-label="Santo Pegasus Soluciones">
  <defs>
  <linearGradient id="sp-grad" x1="2" y1="2" x2="32" y2="32" gradientUnits="userSpaceOnUse">
  <stop stop-color="#22d3ee"/><stop offset=".5" stop-color="#38bdf8"/>
@@ -265,7 +266,7 @@ if prompt:
     st.rerun()
 
 st.markdown(
-    f'<div class="sp-footer">{COMPANY} · Ingeniería de software escalable e '
-    "Inteligencia Artificial aplicada</div>",
+    f'<div class="sp-footer">Corpus de demostración · {COMPANY}, '
+    "empresa ficticia usada como escenario de ejemplo</div>",
     unsafe_allow_html=True,
 )

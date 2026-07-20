@@ -1,8 +1,4 @@
-# Archivo Vivo — Santos Pegasus Soluciones
-
-Asistente RAG para PDF y CSV desarrollado por **Santos Pegasus Soluciones**, empresa de
-tecnología especializada en software escalable bajo arquitectura de microservicios y
-soluciones de Inteligencia Artificial, con despliegue sobre infraestructura de nube OCI.
+# Archivo Vivo: asistente RAG para PDF y CSV
 
 Aplicación web que responde preguntas con evidencia extraída de documentos PDF y CSV. Cada
 respuesta documental incluye el archivo y la página o fila utilizada. Si la información no existe
@@ -49,6 +45,17 @@ reutilizan Chroma y no vuelven a procesar archivos sin cambios.
 
 Los PDF escaneados sin texto seleccionable no se procesan. Deben pasar por OCR antes de ser
 cargados.
+
+## Corpus de demostración
+
+Los cinco PDF de `docs/` son documentación interna de **Santo Pegasus Soluciones**, una
+empresa **ficticia** creada como escenario de ejemplo: onboarding, guías de ingeniería
+back-end y front-end, protocolo de respuesta a incidentes y mapa de microservicios.
+
+No es el autor ni el cliente de esta aplicación. Existe únicamente para dar al asistente un
+corpus realista sobre el que demostrar recuperación con citas. La interfaz adopta su nombre
+y su identidad visual para que la demostración resulte coherente; sustituye ambos si vas a
+usar la aplicación con documentación propia.
 
 ## Arquitectura
 
@@ -112,8 +119,9 @@ respuesta generada a partir de los fragmentos recuperados.
 
 ## Identidad visual
 
-La interfaz usa un tema oscuro con acentos en cian y violeta sobre paneles traslúcidos.
-Todo el sistema visual vive en `assets/theme.css`, separado de la lógica de `app.py`:
+La interfaz usa un tema oscuro con acentos en cian y violeta sobre paneles traslúcidos,
+alineado con el escenario ficticio descrito arriba. Todo el sistema visual vive en
+`assets/theme.css`, separado de la lógica de `app.py`:
 
 | Elemento | Decisión |
 |---|---|
