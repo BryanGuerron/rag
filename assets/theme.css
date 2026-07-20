@@ -37,29 +37,30 @@
         var(--void);
     color: var(--text);
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Crea un contexto de apilado propio para que la retícula de abajo pueda
+       usar z-index negativo sin desaparecer detrás del fondo. */
+    isolation: isolate;
 }
 
-/* Retícula técnica: evoca infraestructura sin competir con el contenido. */
+/* Retícula técnica: evoca infraestructura sin competir con el contenido.
+   z-index negativo la mantiene bajo todo el contenido sin depender de
+   clases internas de Streamlit, que cambian entre versiones. */
 .stApp::before {
     content: "";
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
     background-image:
         linear-gradient(rgba(120, 170, 255, 0.045) 1px, transparent 1px),
         linear-gradient(90deg, rgba(120, 170, 255, 0.045) 1px, transparent 1px);
     background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 78%);
     mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 78%);
 }
 
 [data-testid="stHeader"] {
     background: transparent;
-}
-
-[data-testid="stAppViewContainer"] > .main {
-    position: relative;
-    z-index: 1;
 }
 
 /* ---------- Tipografía ---------- */
