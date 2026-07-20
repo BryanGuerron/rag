@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,11 +10,16 @@ from typing import Any
 
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from rag_alura.config import Settings
 from rag_alura.documents import DocumentLoader, supported_files
+
+
+def _is_rate_limited(error: Exception) -> bool:
+    message = str(error).lower()
+    return "429" in message or "resource_exhausted" in message or "quota" in message
 
 
 @dataclass(frozen=True)
@@ -83,10 +89,10 @@ class KnowledgeBase:
         self.vector_store = vector_store or self._create_vector_store()
 
     def _create_vector_store(self) -> Chroma:
-        self.settings.require_openai_key()
-        embeddings = OpenAIEmbeddings(
+        self.settings.require_google_key()
+        embeddings = GoogleGenerativeAIEmbeddings(
             model=self.settings.embedding_model,
-            api_key=self.settings.openai_api_key,
+            google_api_key=self.settings.google_api_key,
         )
         return Chroma(
             collection_name="rag_alura_documents",
@@ -112,7 +118,7 @@ class KnowledgeBase:
             hashlib.sha256(f"{source_key}:{digest}:{position}".encode()).hexdigest()
             for position in range(len(chunks))
         ]
-        self.vector_store.add_documents(documents=chunks, ids=chunk_ids)
+        self._add_documents_in_batches(chunks, chunk_ids)
 
         if existing and existing.get("ids"):
             self.vector_store.delete(ids=existing["ids"])
@@ -130,6 +136,27 @@ class KnowledgeBase:
             },
         )
         return IndexResult(path.name, len(chunks), "indexed")
+
+    def _add_documents_in_batches(
+        self, chunks: list[Document], chunk_ids: list[str]
+    ) -> None:
+        size = self.settings.embedding_batch_size
+        for start in range(0, len(chunks), size):
+            self._add_batch_with_retry(
+                chunks[start : start + size], chunk_ids[start : start + size]
+            )
+
+    def _add_batch_with_retry(self, batch: list[Document], batch_ids: list[str]) -> None:
+        delay = self.settings.embedding_retry_delay
+        for attempt in range(self.settings.embedding_max_retries + 1):
+            try:
+                self.vector_store.add_documents(documents=batch, ids=batch_ids)
+                return
+            except Exception as exc:
+                if attempt == self.settings.embedding_max_retries or not _is_rate_limited(exc):
+                    raise
+                time.sleep(delay)
+                delay *= 2
 
     def index_directories(self, *directories: Path) -> list[IndexResult]:
         results: list[IndexResult] = []

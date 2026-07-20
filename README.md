@@ -6,7 +6,11 @@ en el corpus, la aplicación solicita permiso antes de consultar fuentes públic
 
 ## Inicio rápido
 
-Requisitos: Python 3.10 a 3.12 y una clave de OpenAI.
+Requisitos: Python 3.10 a 3.12 y una clave de [Google AI Studio](https://aistudio.google.com/apikey).
+El modelo generativo y los embeddings usan la API de Gemini.
+
+Se recomienda Python 3.11 o superior: las librerías `google-*` dejan de publicar
+actualizaciones para Python 3.10 a partir de octubre de 2026.
 
 ```powershell
 python -m venv .venv
@@ -15,7 +19,7 @@ python -m pip install -e ".[dev]"
 Copy-Item .env.example .env
 ```
 
-Agrega `OPENAI_API_KEY` en `.env` y ejecuta:
+Agrega `GOOGLE_API_KEY` en `.env` y ejecuta:
 
 ```powershell
 streamlit run app.py
@@ -37,6 +41,7 @@ reutilizan Chroma y no vuelven a procesar archivos sin cambios.
 | Sin evidencia | Informa que no encontró la respuesta y solicita autorización |
 | Fuente externa | Consulta la web solo después de pulsar **Buscar en la web** y muestra enlaces |
 | Persistencia | Guarda documentos, manifiesto e índice vectorial en `data/` |
+| Límites de cuota | Divide los embeddings en lotes y reintenta con espera creciente ante un 429 |
 
 Los PDF escaneados sin texto seleccionable no se procesan. Deben pasar por OCR antes de ser
 cargados.
@@ -48,7 +53,7 @@ flowchart LR
     U[Usuario] --> S[Streamlit]
     S --> I[Ingestión PDF / CSV]
     I --> C[Chunking con metadatos]
-    C --> E[OpenAI Embeddings]
+    C --> E[Gemini Embeddings]
     E --> V[(Chroma persistente)]
     S --> R[Recuperación top K]
     V --> R
@@ -107,9 +112,12 @@ Copia `.env.example` a `.env` y ajusta estas variables:
 
 | Variable | Obligatoria | Valor predeterminado | Uso |
 |---|---:|---|---|
-| `OPENAI_API_KEY` | Sí | Sin valor | Embeddings y respuestas |
-| `OPENAI_CHAT_MODEL` | No | `gpt-4o-mini` | Modelo generativo |
-| `OPENAI_EMBEDDING_MODEL` | No | `text-embedding-3-small` | Modelo de embeddings |
+| `GOOGLE_API_KEY` | Sí | Sin valor | Embeddings y respuestas |
+| `GOOGLE_CHAT_MODEL` | No | `gemini-3.1-flash-lite` | Modelo generativo |
+| `GOOGLE_EMBEDDING_MODEL` | No | `models/gemini-embedding-001` | Modelo de embeddings |
+| `EMBEDDING_BATCH_SIZE` | No | `50` | Fragmentos por llamada de embeddings |
+| `EMBEDDING_MAX_RETRIES` | No | `5` | Reintentos ante límite de cuota (429) |
+| `EMBEDDING_RETRY_DELAY` | No | `20` | Segundos de espera inicial; se duplica en cada reintento |
 | `RAG_CHUNK_SIZE` | No | `1200` | Tamaño del fragmento en caracteres |
 | `RAG_CHUNK_OVERLAP` | No | `200` | Superposición entre fragmentos |
 | `RAG_TOP_K` | No | `4` | Máximo de fragmentos recuperados |
@@ -129,8 +137,8 @@ python -m compileall -q app.py src
 ```
 
 La suite cubre extracción de metadatos, validación de cargas, reemplazo idempotente,
-filtrado por relevancia, rechazo de respuestas sin citas, historial conversacional y separación
-de fuentes web.
+filtrado por relevancia, rechazo de respuestas sin citas, historial conversacional, separación
+de fuentes web, división en lotes de embeddings y reintentos ante límites de cuota.
 
 ## Docker
 
@@ -213,7 +221,7 @@ captura real.
 - La búsqueda web no se ejecuta automáticamente ni se mezcla silenciosamente con las fuentes
   documentales.
 - Para producción, termina TLS en un load balancer o proxy, restringe el puerto `8501` y almacena
-  `OPENAI_API_KEY` en OCI Vault.
+  `GOOGLE_API_KEY` en OCI Vault.
 
 ## Estructura del repositorio
 

@@ -47,7 +47,7 @@ st.markdown(
 @st.cache_resource(show_spinner=False)
 def build_services() -> tuple[Settings, KnowledgeBase, DocumentAssistant, list[str]]:
     settings = Settings.from_env()
-    settings.require_openai_key()
+    settings.require_google_key()
     knowledge_base = KnowledgeBase(settings)
     startup_errors: list[str] = []
     for path in [*supported_files(settings.docs_dir), *supported_files(settings.uploads_dir)]:
@@ -94,7 +94,7 @@ try:
     settings, knowledge_base, assistant, startup_errors = build_services()
 except ConfigurationError as exc:
     st.error(str(exc))
-    st.code("copy .env.example .env\n# Add OPENAI_API_KEY to .env", language="bash")
+    st.code("copy .env.example .env\n# Add GOOGLE_API_KEY to .env", language="bash")
     st.stop()
 except Exception as exc:
     st.error(f"No se pudo iniciar la base de conocimiento: {exc}")

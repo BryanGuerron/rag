@@ -44,7 +44,7 @@ class FakeWebSearch:
 
 
 def assistant_settings(tmp_path, monkeypatch: pytest.MonkeyPatch) -> Settings:
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
     return Settings.from_env(tmp_path)
 
 
@@ -73,6 +73,22 @@ def test_document_answer_only_returns_citations_used_by_model(
     assert answer.source_type == "documents"
     assert [citation.label for citation in answer.citations] == ["S1"]
     assert answer.citations[0].locator == "page 4"
+
+
+def test_grouped_citation_labels_are_recognized(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    knowledge_base = FakeKnowledgeBase([document_chunk(), document_chunk("other.pdf", 8)])
+    assistant = DocumentAssistant(
+        assistant_settings(tmp_path, monkeypatch),
+        knowledge_base,
+        model=FakeModel("El back-end usa Java 17 y Spring Boot 3 [S1, S2]."),
+    )
+
+    answer = assistant.answer_from_documents("¿Qué usa el backend?")
+
+    assert answer.found is True
+    assert [citation.label for citation in answer.citations] == ["S1", "S2"]
 
 
 def test_document_answer_rejects_unsupported_model_output(

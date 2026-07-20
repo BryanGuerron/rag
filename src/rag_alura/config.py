@@ -41,7 +41,7 @@ class Settings:
     uploads_dir: Path
     vector_dir: Path
     manifest_path: Path
-    openai_api_key: str
+    google_api_key: str
     chat_model: str
     embedding_model: str
     chunk_size: int
@@ -50,6 +50,9 @@ class Settings:
     minimum_relevance: float
     max_upload_bytes: int
     web_search_results: int
+    embedding_batch_size: int
+    embedding_max_retries: int
+    embedding_retry_delay: float
 
     @classmethod
     def from_env(cls, root_dir: Path | None = None) -> Settings:
@@ -69,10 +72,10 @@ class Settings:
             uploads_dir=data_dir / "uploads",
             vector_dir=data_dir / "chroma",
             manifest_path=data_dir / "manifest.json",
-            openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
-            chat_model=os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini"),
+            google_api_key=os.getenv("GOOGLE_API_KEY", "").strip(),
+            chat_model=os.getenv("GOOGLE_CHAT_MODEL", "gemini-3.1-flash-lite"),
             embedding_model=os.getenv(
-                "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
+                "GOOGLE_EMBEDDING_MODEL", "models/gemini-embedding-001"
             ),
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -80,14 +83,17 @@ class Settings:
             minimum_relevance=_decimal("RAG_MIN_RELEVANCE", 0.2, 0.0, 1.0),
             max_upload_bytes=_integer("MAX_UPLOAD_MB", 20) * 1024 * 1024,
             web_search_results=_integer("WEB_SEARCH_RESULTS", 5),
+            embedding_batch_size=_integer("EMBEDDING_BATCH_SIZE", 50),
+            embedding_max_retries=_integer("EMBEDDING_MAX_RETRIES", 5, minimum=0),
+            embedding_retry_delay=_decimal("EMBEDDING_RETRY_DELAY", 20.0, 0.0, 300.0),
         )
 
     def prepare_directories(self) -> None:
         self.uploads_dir.mkdir(parents=True, exist_ok=True)
         self.vector_dir.mkdir(parents=True, exist_ok=True)
 
-    def require_openai_key(self) -> None:
-        if not self.openai_api_key:
+    def require_google_key(self) -> None:
+        if not self.google_api_key:
             raise ConfigurationError(
-                "OPENAI_API_KEY is required. Create .env from .env.example and add the key."
+                "GOOGLE_API_KEY is required. Create .env from .env.example and add the key."
             )

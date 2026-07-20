@@ -27,11 +27,11 @@ def test_settings_rejects_overlap_larger_than_chunk(
         Settings.from_env(tmp_path)
 
 
-def test_openai_key_is_required_for_model_operations(
+def test_google_key_is_required_for_model_operations(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     settings = Settings.from_env(tmp_path)
 
-    with pytest.raises(ConfigurationError, match="OPENAI_API_KEY"):
-        settings.require_openai_key()
+    with pytest.raises(ConfigurationError, match="GOOGLE_API_KEY"):
+        settings.require_google_key()

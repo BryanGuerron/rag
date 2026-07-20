@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from rag_alura.config import Settings
 from rag_alura.knowledge_base import KnowledgeBase, RetrievedChunk
@@ -66,13 +66,13 @@ class DocumentAssistant:
         web_search: PublicWebSearch | None = None,
         model: Any | None = None,
     ) -> None:
-        settings.require_openai_key()
+        settings.require_google_key()
         self.knowledge_base = knowledge_base
         self.web_search = web_search or PublicWebSearch(settings.web_search_results)
-        self.model = model or ChatOpenAI(
+        self.model = model or ChatGoogleGenerativeAI(
             model=settings.chat_model,
             temperature=0,
-            api_key=settings.openai_api_key,
+            google_api_key=settings.google_api_key,
         )
 
     def answer_from_documents(
@@ -180,7 +180,11 @@ class DocumentAssistant:
         citations: Sequence[Citation],
         prefix: str,
     ) -> tuple[Citation, ...]:
-        labels = set(re.findall(rf"\[({prefix}\d+)\]", content))
+        labels = {
+            label
+            for group in re.findall(r"\[([^\]]+)\]", content)
+            for label in re.findall(rf"\b{prefix}\d+\b", group)
+        }
         return tuple(citation for citation in citations if citation.label in labels)
 
     @staticmethod
