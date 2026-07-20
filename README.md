@@ -1,4 +1,8 @@
-# Archivo Vivo: asistente RAG para PDF y CSV
+# Archivo Vivo — Santos Pegasus Soluciones
+
+Asistente RAG para PDF y CSV desarrollado por **Santos Pegasus Soluciones**, empresa de
+tecnología especializada en software escalable bajo arquitectura de microservicios y
+soluciones de Inteligencia Artificial, con despliegue sobre infraestructura de nube OCI.
 
 Aplicación web que responde preguntas con evidencia extraída de documentos PDF y CSV. Cada
 respuesta documental incluye el archivo y la página o fila utilizada. Si la información no existe
@@ -105,6 +109,21 @@ Los documentos incluidos permiten responder, entre otras, estas preguntas:
 
 La interfaz muestra las citas exactas. Los textos anteriores son ejemplos y no sustituyen la
 respuesta generada a partir de los fragmentos recuperados.
+
+## Identidad visual
+
+La interfaz usa un tema oscuro con acentos en cian y violeta sobre paneles traslúcidos.
+Todo el sistema visual vive en `assets/theme.css`, separado de la lógica de `app.py`:
+
+| Elemento | Decisión |
+|---|---|
+| Paleta | Definida como tokens en `:root`; recolorear la marca es cambiar ese bloque |
+| Tipografía | `Space Grotesk` en títulos e `Inter` en texto, con alternativas del sistema |
+| Superficies | Vidrio esmerilado sobre un fondo con degradados radiales y retícula técnica |
+| Movimiento | Se desactiva por completo con `prefers-reduced-motion` |
+
+Si `assets/theme.css` no está disponible, la aplicación arranca igual con el tema base
+declarado en `.streamlit/config.toml`.
 
 ## Configuración
 
@@ -228,6 +247,7 @@ captura real.
 ```text
 .
 ├── app.py                       Interfaz y flujo de consentimiento
+├── assets/theme.css             Sistema visual de marca (tokens y componentes)
 ├── src/rag_alura/
 │   ├── assistant.py             Respuestas fundamentadas y citas
 │   ├── config.py                Configuración por entorno

@@ -1,0 +1,394 @@
+/* Santos Pegasus Soluciones — sistema visual del asistente RAG.
+   Tokens primero, luego componentes, para poder recolorear la marca
+   cambiando solo el bloque :root. */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+
+:root {
+    --void: #05070f;
+    --deep: #080d1a;
+    --surface: rgba(19, 29, 51, 0.55);
+    --surface-solid: #0e1526;
+    --border: rgba(120, 170, 255, 0.14);
+    --border-bright: rgba(120, 170, 255, 0.3);
+
+    --cyan: #22d3ee;
+    --violet: #8b5cf6;
+    --sky: #38bdf8;
+
+    --text: #e8eefb;
+    --muted: #93a5c4;
+    --dim: #64748b;
+
+    --brand-gradient: linear-gradient(110deg, var(--cyan), var(--sky) 45%, var(--violet));
+    --glow-cyan: 0 0 24px rgba(34, 211, 238, 0.28);
+
+    --radius: 14px;
+    --radius-sm: 9px;
+}
+
+/* ---------- Lienzo ---------- */
+
+.stApp {
+    background:
+        radial-gradient(900px 520px at 12% -8%, rgba(34, 211, 238, 0.11), transparent 60%),
+        radial-gradient(760px 480px at 88% 4%, rgba(139, 92, 246, 0.13), transparent 62%),
+        radial-gradient(1000px 700px at 50% 108%, rgba(56, 189, 248, 0.07), transparent 70%),
+        var(--void);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Retícula técnica: evoca infraestructura sin competir con el contenido. */
+.stApp::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        linear-gradient(rgba(120, 170, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 170, 255, 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 78%);
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+[data-testid="stAppViewContainer"] > .main {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- Tipografía ---------- */
+
+h1, h2, h3, h4 {
+    font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    color: var(--text);
+}
+
+a {
+    color: var(--cyan);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.35);
+}
+
+a:hover {
+    border-bottom-color: var(--cyan);
+}
+
+code {
+    background: rgba(34, 211, 238, 0.09) !important;
+    color: var(--cyan) !important;
+    border: 1px solid rgba(34, 211, 238, 0.16);
+    border-radius: 5px;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.85em;
+}
+
+/* ---------- Encabezado de marca ---------- */
+
+.sp-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1.5rem;
+}
+
+.sp-brand__mark {
+    flex: 0 0 auto;
+    filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.45));
+}
+
+.sp-brand__name {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.15;
+    color: var(--text);
+}
+
+.sp-brand__tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dim);
+}
+
+.sp-hero {
+    margin: 0 0 0.4rem;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sp-lede {
+    max-width: 60ch;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--cyan);
+}
+
+.eyebrow::before {
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+}
+
+/* ---------- Chips de estado ---------- */
+
+.sp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1.1rem 0 0.4rem;
+}
+
+.sp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    backdrop-filter: blur(10px);
+    font-size: 0.73rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.sp-chip__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: var(--glow-cyan);
+    animation: sp-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes sp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+/* ---------- Barra lateral ---------- */
+
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, rgba(10, 16, 30, 0.96), rgba(6, 9, 18, 0.96));
+    border-right: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+}
+
+[data-testid="stSidebar"] * {
+    color: var(--text);
+}
+
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] small {
+    color: var(--muted) !important;
+}
+
+.source-pill {
+    display: inline-block;
+    margin: 0.15rem 0.15rem 0 0;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(34, 211, 238, 0.06);
+    font-size: 0.72rem;
+    color: var(--muted);
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.source-pill:hover {
+    border-color: var(--border-bright);
+    color: var(--text);
+}
+
+/* ---------- Métrica ---------- */
+
+[data-testid="stMetric"] {
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+}
+
+[data-testid="stMetricValue"] {
+    font-family: "Space Grotesk", sans-serif;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--muted) !important;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ---------- Mensajes del chat ---------- */
+
+[data-testid="stChatMessage"] {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    backdrop-filter: blur(14px);
+    padding: 1rem 1.15rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Filo luminoso que distingue la respuesta del asistente del turno del usuario. */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
+    border-left: 2px solid transparent;
+    background-image: linear-gradient(var(--surface-solid), var(--surface-solid)),
+        var(--brand-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+[data-testid="stChatInput"] {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(14, 21, 38, 0.85);
+    backdrop-filter: blur(14px);
+}
+
+[data-testid="stChatInput"]:focus-within {
+    border-color: var(--border-bright);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+}
+
+[data-testid="stChatInput"] textarea {
+    color: var(--text) !important;
+}
+
+/* ---------- Botones ---------- */
+
+.stButton > button,
+[data-testid="stFormSubmitButton"] > button {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.stButton > button:hover,
+[data-testid="stFormSubmitButton"] > button:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-1px);
+}
+
+.stButton > button[kind="primary"],
+[data-testid="stFormSubmitButton"] > button[kind="primary"] {
+    background: var(--brand-gradient);
+    border: none;
+    color: #04121a;
+    font-weight: 700;
+}
+
+.stButton > button[kind="primary"]:hover,
+[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
+    box-shadow: var(--glow-cyan);
+}
+
+/* ---------- Contenedores ---------- */
+
+[data-testid="stExpander"] details {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+}
+
+[data-testid="stExpander"] summary:hover {
+    color: var(--cyan);
+}
+
+[data-testid="stFileUploaderDropzone"] {
+    border: 1px dashed var(--border-bright);
+    border-radius: var(--radius);
+    background: rgba(34, 211, 238, 0.04);
+}
+
+[data-testid="stFileUploaderDropzone"]:hover {
+    background: rgba(34, 211, 238, 0.08);
+}
+
+[data-testid="stAlert"] {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    color: var(--text);
+}
+
+/* ---------- Barra de desplazamiento ---------- */
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--deep);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(120, 170, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 211, 238, 0.45);
+}
+
+/* ---------- Pie de marca ---------- */
+
+.sp-footer {
+    margin-top: 2.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.72rem;
+    color: var(--dim);
+    letter-spacing: 0.04em;
+}
+
+/* ---------- Accesibilidad ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    .sp-chip__dot {
+        animation: none !important;
+        transition: none !important;
+    }
+}

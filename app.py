@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from pathlib import Path
 
 import streamlit as st
 
@@ -10,38 +11,70 @@ from rag_alura.documents import DocumentProcessingError, save_uploaded_file, sup
 from rag_alura.knowledge_base import KnowledgeBase
 from rag_alura.web_search import WebSearchError
 
+COMPANY = "Santos Pegasus Soluciones"
+PRODUCT = "Archivo Vivo"
+THEME_PATH = Path(__file__).parent / "assets" / "theme.css"
+
+BRAND_MARK = """
+<svg class="sp-brand__mark" width="34" height="34" viewBox="0 0 34 34" fill="none"
+     role="img" aria-label="Santos Pegasus Soluciones">
+  <defs>
+    <linearGradient id="sp-grad" x1="2" y1="2" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/><stop offset=".5" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <path d="M17 2.4 30 9.7v14.6L17 31.6 4 24.3V9.7z" stroke="url(#sp-grad)"
+        stroke-width="1.2" opacity=".45"/>
+  <path d="M9.5 23 22 10.5" stroke="url(#sp-grad)" stroke-width="2.1" stroke-linecap="round"/>
+  <path d="M13.6 24.4 24.4 13.6" stroke="url(#sp-grad)" stroke-width="1.6"
+        stroke-linecap="round" opacity=".72"/>
+  <path d="M18.2 25.2 25.6 17.8" stroke="url(#sp-grad)" stroke-width="1.2"
+        stroke-linecap="round" opacity=".45"/>
+  <circle cx="22.4" cy="10.2" r="2.5" fill="url(#sp-grad)"/>
+</svg>
+"""
+
 st.set_page_config(
-    page_title="Archivo Vivo",
-    page_icon="AV",
+    page_title=f"{COMPANY} · {PRODUCT}",
+    page_icon="◆",
     layout="centered",
     initial_sidebar_state="expanded",
 )
 
-st.markdown(
-    """
-    <style>
-    :root {
-        --ink: #17211b;
-        --paper: #f4f1e8;
-        --accent: #1f6b4f;
-        --line: #d6d0c1;
-    }
-    .stApp { background: var(--paper); color: var(--ink); }
-    [data-testid="stSidebar"] { background: #e8e4d8; border-right: 1px solid var(--line); }
-    h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.02em; }
-    .eyebrow { color: var(--accent); font-size: .75rem; font-weight: 700; letter-spacing: .15em; }
-    .source-pill {
-        display: inline-block; padding: .15rem .45rem; margin: .1rem;
-        border: 1px solid var(--line); border-radius: 999px; font-size: .75rem;
-    }
-    [data-testid="stChatMessage"] {
-        background: rgba(255,255,255,.38); border: 1px solid var(--line); border-radius: 4px;
-    }
-    .stButton > button { border-radius: 2px; font-weight: 650; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+
+def load_theme() -> None:
+    """Inyecta la hoja de estilos de marca; la app sigue siendo usable sin ella."""
+    try:
+        css = THEME_PATH.read_text(encoding="utf-8")
+    except OSError:
+        return
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+
+def render_brand() -> None:
+    st.markdown(
+        f"""
+        <div class="sp-brand">
+          {BRAND_MARK}
+          <div>
+            <div class="sp-brand__name">{COMPANY}</div>
+            <div class="sp-brand__tag">Microservicios · IA · Nube OCI</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_chips(chips: list[str]) -> None:
+    items = "".join(
+        f'<span class="sp-chip"><span class="sp-chip__dot"></span>{chip}</span>' for chip in chips
+    )
+    st.markdown(f'<div class="sp-chips">{items}</div>', unsafe_allow_html=True)
+
+
+load_theme()
 
 
 @st.cache_resource(show_spinner=False)
@@ -104,7 +137,8 @@ st.session_state.setdefault("messages", [])
 st.session_state.setdefault("pending_external_query", None)
 
 with st.sidebar:
-    st.markdown('<p class="eyebrow">BASE DE CONOCIMIENTO</p>', unsafe_allow_html=True)
+    render_brand()
+    st.markdown('<p class="eyebrow">Base de conocimiento</p>', unsafe_allow_html=True)
     st.header("Biblioteca")
     st.caption("Los archivos quedan indexados en el volumen persistente de la aplicación.")
 
@@ -152,11 +186,21 @@ with st.sidebar:
             for error in startup_errors:
                 st.error(error)
 
-st.markdown('<p class="eyebrow">RAG DOCUMENTAL CON FUENTES</p>', unsafe_allow_html=True)
-st.title("Archivo Vivo")
-st.write(
-    "Pregunta sobre los documentos. Cada respuesta debe señalar el archivo y la ubicación "
-    "que la fundamentan."
+st.markdown('<p class="eyebrow">RAG documental con trazabilidad</p>', unsafe_allow_html=True)
+st.markdown(f'<h1 class="sp-hero">{PRODUCT}</h1>', unsafe_allow_html=True)
+st.markdown(
+    '<p class="sp-lede">Respuestas fundamentadas exclusivamente en tus documentos. '
+    "Cada afirmación señala el archivo y la ubicación exacta que la respaldan; "
+    "sin evidencia, el asistente lo declara en lugar de improvisar.</p>",
+    unsafe_allow_html=True,
+)
+
+render_chips(
+    [
+        f"{len(knowledge_base.list_sources())} documentos indexados",
+        f"Modelo {settings.chat_model}",
+        f"Top-{settings.top_k} fragmentos",
+    ]
 )
 
 if not st.session_state.messages:
@@ -213,3 +257,9 @@ if prompt:
             }
         )
     st.rerun()
+
+st.markdown(
+    f'<div class="sp-footer">{COMPANY} · Ingeniería de software escalable e '
+    "Inteligencia Artificial aplicada</div>",
+    unsafe_allow_html=True,
+)

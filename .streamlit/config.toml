@@ -10,9 +10,9 @@ enableCORS = true
 gatherUsageStats = false
 
 [theme]
-base = "light"
-primaryColor = "#1f6b4f"
-backgroundColor = "#f4f1e8"
-secondaryBackgroundColor = "#e8e4d8"
-textColor = "#17211b"
+base = "dark"
+primaryColor = "#22d3ee"
+backgroundColor = "#05070f"
+secondaryBackgroundColor = "#0e1526"
+textColor = "#e8eefb"
 font = "sans serif"

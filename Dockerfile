@@ -14,6 +14,7 @@ COPY src ./src
 RUN python -m pip install --upgrade pip && python -m pip install .
 
 COPY app.py ./
+COPY assets ./assets
 COPY .streamlit ./.streamlit
 COPY docs ./docs
 
