@@ -52,7 +52,7 @@ def document_chunk(source: str = "guide.pdf", page: int = 4) -> RetrievedChunk:
     return RetrievedChunk(
         Document(
             page_content="The backend uses Java 17 and Spring Boot 3.",
-            metadata={"source": source, "locator": f"page {page}"},
+            metadata={"source": source, "locator": f"page {page}", "page": page},
         ),
         relevance=0.9,
     )
@@ -89,6 +89,38 @@ def test_grouped_citation_labels_are_recognized(
 
     assert answer.found is True
     assert [citation.label for citation in answer.citations] == ["S1", "S2"]
+
+
+def test_citation_carries_the_page_for_deep_linking(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assistant = DocumentAssistant(
+        assistant_settings(tmp_path, monkeypatch),
+        FakeKnowledgeBase([document_chunk("manual.pdf", 24)]),
+        model=FakeModel("Necesita dos aprobaciones [S1]."),
+    )
+
+    answer = assistant.answer_from_documents("¿Cuántas aprobaciones?")
+
+    assert answer.citations[0].page == 24
+
+
+def test_citation_page_is_absent_for_sources_without_pages(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    chunk = RetrievedChunk(
+        Document(page_content="producto: Mouse", metadata={"source": "ventas.csv", "row": 2}),
+        relevance=0.9,
+    )
+    assistant = DocumentAssistant(
+        assistant_settings(tmp_path, monkeypatch),
+        FakeKnowledgeBase([chunk]),
+        model=FakeModel("El producto es Mouse [S1]."),
+    )
+
+    answer = assistant.answer_from_documents("¿Qué producto?")
+
+    assert answer.citations[0].page is None
 
 
 def test_document_answer_rejects_unsupported_model_output(

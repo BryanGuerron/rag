@@ -229,6 +229,37 @@ code {
     color: var(--text);
 }
 
+/* ---------- Citas ---------- */
+
+.sp-cite {
+    padding: 0.4rem 0 0.4rem 0.7rem;
+    border-left: 2px solid var(--border);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    transition: border-color 0.18s ease;
+}
+
+.sp-cite:hover {
+    border-left-color: var(--cyan);
+}
+
+.sp-cite__label {
+    font-family: "Space Grotesk", monospace;
+    font-weight: 700;
+    color: var(--cyan);
+}
+
+.sp-cite__link {
+    color: var(--text);
+    border-bottom: 1px dashed rgba(34, 211, 238, 0.4);
+}
+
+.sp-cite__link:hover {
+    color: var(--cyan);
+    border-bottom-style: solid;
+}
+
 /* ---------- Métrica ---------- */
 
 [data-testid="stMetric"] {

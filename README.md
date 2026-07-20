@@ -40,6 +40,7 @@ reutilizan Chroma y no vuelven a procesar archivos sin cambios.
 | Respuestas | Usa únicamente los fragmentos recuperados y exige citas `[S1]`, `[S2]` |
 | Sin evidencia | Informa que no encontró la respuesta y solicita autorización |
 | Fuente externa | Consulta la web solo después de pulsar **Buscar en la web** y muestra enlaces |
+| Verificación | Cada cita enlaza al documento y lo abre en la página exacta citada |
 | Persistencia | Guarda documentos, manifiesto e índice vectorial en `data/` |
 | Límites de cuota | Divide los embeddings en lotes y reintenta con espera creciente ante un 429 |
 
@@ -88,6 +89,18 @@ flowchart LR
    `NO_ENCONTRADO`.
 6. La aplicación valida las etiquetas citadas. Una respuesta sin citas válidas se rechaza como
    no fundamentada.
+7. Cada cita se muestra como enlace al documento original, anclado con `#page=N` para que el
+   visor del navegador abra directamente la página citada y la afirmación pueda comprobarse.
+
+### Apertura de documentos citados
+
+Streamlit solo publica archivos ubicados en `static/`, así que los documentos indexados se
+replican allí la primera vez que se cargan. El original en `docs/` o `data/uploads/` sigue
+siendo la fuente de verdad del índice; la copia existe únicamente para el navegador y está
+excluida del repositorio y de la imagen Docker.
+
+El ancla `#page=N` la interpreta el visor PDF integrado del navegador. Los CSV se enlazan sin
+ancla porque la fila no es direccionable.
 
 ### Persistencia e idempotencia
 
@@ -165,7 +178,8 @@ python -m compileall -q app.py src
 
 La suite cubre extracción de metadatos, validación de cargas, reemplazo idempotente,
 filtrado por relevancia, rechazo de respuestas sin citas, historial conversacional, separación
-de fuentes web, división en lotes de embeddings y reintentos ante límites de cuota.
+de fuentes web, división en lotes de embeddings, reintentos ante límites de cuota y
+construcción de enlaces por página hacia los documentos citados.
 
 ## Docker
 
@@ -245,6 +259,12 @@ captura real.
 - Los PDF actuales contienen marcas de uso interno o confidencial. Confirma que tienes permiso
   para publicarlos antes de desplegar una demo abierta.
 - Las preguntas, fragmentos recuperados y extractos web se envían al proveedor del modelo.
+- **La apertura de documentos citados los expone completos por HTTP.** Cualquiera que alcance
+  la aplicación puede descargar un documento indexado desde `/app/static/<archivo>` sin pasar
+  por el asistente. Antes solo eran accesibles los fragmentos recuperados. Si el corpus es
+  confidencial, agrega autenticación antes de exponer la aplicación o desactiva
+  `server.enableStaticServing`: las citas vuelven a mostrarse como texto y nada más deja de
+  funcionar.
 - La búsqueda web no se ejecuta automáticamente ni se mezcla silenciosamente con las fuentes
   documentales.
 - Para producción, termina TLS en un load balancer o proxy, restringe el puerto `8501` y almacena
@@ -259,6 +279,7 @@ captura real.
 ├── src/rag_alura/
 │   ├── assistant.py             Respuestas fundamentadas y citas
 │   ├── config.py                Configuración por entorno
+│   ├── document_links.py        Publicación de documentos y enlaces por página
 │   ├── documents.py             Extracción PDF/CSV y cargas seguras
 │   ├── knowledge_base.py        Chroma, manifiesto y recuperación
 │   └── web_search.py            Búsqueda pública opcional

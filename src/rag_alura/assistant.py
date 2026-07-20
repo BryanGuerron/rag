@@ -42,12 +42,24 @@ Reglas obligatorias:
 """.strip()
 
 
+def _page_number(raw: Any) -> int | None:
+    """Chroma devuelve los metadatos numéricos como int o float según el backend."""
+    if isinstance(raw, bool) or raw is None:
+        return None
+    try:
+        page = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return page if page > 0 else None
+
+
 @dataclass(frozen=True)
 class Citation:
     label: str
     title: str
     locator: str = ""
     url: str = ""
+    page: int | None = None
 
 
 @dataclass(frozen=True)
@@ -156,7 +168,14 @@ class DocumentAssistant:
             metadata = chunk.document.metadata
             title = str(metadata.get("source", "Documento"))
             locator = str(metadata.get("locator", ""))
-            citations.append(Citation(label=label, title=title, locator=locator))
+            citations.append(
+                Citation(
+                    label=label,
+                    title=title,
+                    locator=locator,
+                    page=_page_number(metadata.get("page")),
+                )
+            )
             context_blocks.append(
                 f"[{label}] Archivo: {title}; ubicación: {locator}\n{chunk.document.page_content}"
             )

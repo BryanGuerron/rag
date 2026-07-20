@@ -5,6 +5,8 @@ port = 8501
 maxUploadSize = 20
 enableXsrfProtection = true
 enableCORS = true
+# Publica ./static para poder abrir un documento citado en su página exacta.
+enableStaticServing = true
 
 [browser]
 gatherUsageStats = false

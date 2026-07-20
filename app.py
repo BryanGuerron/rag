@@ -7,6 +7,7 @@ import streamlit as st
 
 from rag_alura.assistant import AssistantAnswer, DocumentAssistant
 from rag_alura.config import ConfigurationError, Settings
+from rag_alura.document_links import citation_href, publish_for_viewing
 from rag_alura.documents import DocumentProcessingError, save_uploaded_file, supported_files
 from rag_alura.knowledge_base import KnowledgeBase
 from rag_alura.web_search import WebSearchError
@@ -15,6 +16,11 @@ from rag_alura.web_search import WebSearchError
 COMPANY = "Santo Pegasus Soluciones"
 PRODUCT = "Archivo Vivo"
 THEME_PATH = Path(__file__).parent / "assets" / "theme.css"
+
+# Streamlit solo publica archivos desde ./static (server.enableStaticServing).
+# Los documentos viven en docs/ y data/uploads/, así que se replican aquí para
+# poder enlazarlos; el original sigue siendo la fuente de verdad del índice.
+STATIC_DIR = Path(__file__).parent / "static"
 
 # Ninguna línea supera los tres espacios de sangría: con cuatro o más,
 # Markdown la trataría como bloque de código en lugar de HTML.
@@ -93,6 +99,7 @@ def build_services() -> tuple[Settings, KnowledgeBase, DocumentAssistant, list[s
     for path in [*supported_files(settings.docs_dir), *supported_files(settings.uploads_dir)]:
         try:
             knowledge_base.index_file(path)
+            publish_for_viewing(path, STATIC_DIR)
         except Exception as exc:
             startup_errors.append(f"{path.name}: {exc}")
     assistant = DocumentAssistant(settings, knowledge_base)
@@ -118,9 +125,24 @@ def render_citations(message: dict[str, object]) -> None:
         for citation in citations:
             if citation.get("url"):
                 st.markdown(f"- **[{citation['label']}]** [{citation['title']}]({citation['url']})")
+                continue
+
+            title = str(citation["title"])
+            locator = str(citation.get("locator") or "")
+            href = citation_href(title, citation.get("page"), STATIC_DIR)
+            suffix = f", {locator}" if locator else ""
+            if href:
+                # Sin sangría: Markdown trataría el HTML como bloque de código.
+                st.markdown(
+                    f'<div class="sp-cite">'
+                    f'<span class="sp-cite__label">[{citation["label"]}]</span> '
+                    f'<a class="sp-cite__link" href="{href}" target="_blank" '
+                    f'rel="noopener">{title}</a>{suffix}'
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
             else:
-                locator = f", {citation['locator']}" if citation.get("locator") else ""
-                st.markdown(f"- **[{citation['label']}]** `{citation['title']}`{locator}")
+                st.markdown(f"- **[{citation['label']}]** `{title}`{suffix}")
 
 
 def render_history() -> None:
@@ -171,6 +193,7 @@ with st.sidebar:
                 )
                 with st.spinner(f"Indexando {path.name}..."):
                     result = knowledge_base.index_file(path)
+                publish_for_viewing(path, STATIC_DIR)
                 if result.status == "unchanged":
                     st.info(f"{result.source} ya estaba actualizado.")
                 else:
