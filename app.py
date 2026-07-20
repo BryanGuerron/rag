@@ -15,23 +15,25 @@ COMPANY = "Santos Pegasus Soluciones"
 PRODUCT = "Archivo Vivo"
 THEME_PATH = Path(__file__).parent / "assets" / "theme.css"
 
+# Ninguna línea supera los tres espacios de sangría: con cuatro o más,
+# Markdown la trataría como bloque de código en lugar de HTML.
 BRAND_MARK = """
-<svg class="sp-brand__mark" width="34" height="34" viewBox="0 0 34 34" fill="none"
-     role="img" aria-label="Santos Pegasus Soluciones">
-  <defs>
-    <linearGradient id="sp-grad" x1="2" y1="2" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22d3ee"/><stop offset=".5" stop-color="#38bdf8"/>
-      <stop offset="1" stop-color="#8b5cf6"/>
-    </linearGradient>
-  </defs>
-  <path d="M17 2.4 30 9.7v14.6L17 31.6 4 24.3V9.7z" stroke="url(#sp-grad)"
-        stroke-width="1.2" opacity=".45"/>
-  <path d="M9.5 23 22 10.5" stroke="url(#sp-grad)" stroke-width="2.1" stroke-linecap="round"/>
-  <path d="M13.6 24.4 24.4 13.6" stroke="url(#sp-grad)" stroke-width="1.6"
-        stroke-linecap="round" opacity=".72"/>
-  <path d="M18.2 25.2 25.6 17.8" stroke="url(#sp-grad)" stroke-width="1.2"
-        stroke-linecap="round" opacity=".45"/>
-  <circle cx="22.4" cy="10.2" r="2.5" fill="url(#sp-grad)"/>
+<svg class="sp-brand__mark" width="34" height="34" viewBox="0 0 34 34" fill="none" role="img"
+ aria-label="Santos Pegasus Soluciones">
+ <defs>
+ <linearGradient id="sp-grad" x1="2" y1="2" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+ <stop stop-color="#22d3ee"/><stop offset=".5" stop-color="#38bdf8"/>
+ <stop offset="1" stop-color="#8b5cf6"/>
+ </linearGradient>
+ </defs>
+ <path d="M17 2.4 30 9.7v14.6L17 31.6 4 24.3V9.7z" stroke="url(#sp-grad)" stroke-width="1.2"
+ opacity=".45"/>
+ <path d="M9.5 23 22 10.5" stroke="url(#sp-grad)" stroke-width="2.1" stroke-linecap="round"/>
+ <path d="M13.6 24.4 24.4 13.6" stroke="url(#sp-grad)" stroke-width="1.6"
+ stroke-linecap="round" opacity=".72"/>
+ <path d="M18.2 25.2 25.6 17.8" stroke="url(#sp-grad)" stroke-width="1.2"
+ stroke-linecap="round" opacity=".45"/>
+ <circle cx="22.4" cy="10.2" r="2.5" fill="url(#sp-grad)"/>
 </svg>
 """
 
@@ -53,16 +55,20 @@ def load_theme() -> None:
 
 
 def render_brand() -> None:
+    # Sin sangría a propósito: Markdown convierte en bloque de código toda
+    # línea con cuatro o más espacios iniciales, incluso dentro de HTML.
     st.markdown(
-        f"""
-        <div class="sp-brand">
-          {BRAND_MARK}
-          <div>
-            <div class="sp-brand__name">{COMPANY}</div>
-            <div class="sp-brand__tag">Microservicios · IA · Nube OCI</div>
-          </div>
-        </div>
-        """,
+        "\n".join(
+            [
+                '<div class="sp-brand">',
+                BRAND_MARK.strip(),
+                "<div>",
+                f'<div class="sp-brand__name">{COMPANY}</div>',
+                '<div class="sp-brand__tag">Microservicios · IA · Nube OCI</div>',
+                "</div>",
+                "</div>",
+            ]
+        ),
         unsafe_allow_html=True,
     )
 
