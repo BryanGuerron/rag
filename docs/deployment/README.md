@@ -1,6 +1,7 @@
 # 🖼️ Capturas del despliegue
 
-Imágenes que ilustran la sección **Despliegue en la nube** del `README.md` principal.
+Capturas de la aplicación ejecutándose en la instancia de OCI Compute. Ilustran la sección
+**Despliegue en la nube** del `README.md` principal.
 
 | Archivo | Contenido |
 |---|---|

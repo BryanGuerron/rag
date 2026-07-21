@@ -50,6 +50,9 @@ cargados.
 
 ## ☁️ Despliegue en la nube
 
+La aplicación corre sobre una instancia **OCI Compute** del nivel Always Free. Las capturas
+provienen de ese despliegue.
+
 ![Archivo Vivo respondiendo con citas enlazadas](docs/deployment/cloud-1.PNG)
 
 Respuesta con las fuentes desplegadas: cada cita enlaza al PDF y lo abre en la página exacta
