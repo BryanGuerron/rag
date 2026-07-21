@@ -191,68 +191,144 @@ docker run --rm -p 8501:8501 --env-file .env -v rag-data:/app/data rag-alura
 
 El volumen `rag-data` evita perder archivos cargados y embeddings al reemplazar el contenedor.
 
-## Despliegue en OCI Compute
+## Despliegue en OCI Compute (nivel gratuito)
 
-La receta incluida utiliza una VM Oracle Linux y Docker Compose. No requiere servicios OCI
-administrados adicionales.
+Paso a paso sobre el nivel **Always Free** de Oracle Cloud. La receta usa una VM Oracle Linux
+con Docker Compose y no requiere servicios OCI administrados adicionales.
 
-### 1. Crear la instancia
+### 1. Elegir la unidad
 
-1. Crea una instancia **OCI Compute** con Oracle Linux 9, IP pública y una clave SSH.
-2. En la Network Security List o Network Security Group habilita la entrada TCP al puerto `8501`.
-3. Para una demostración puede usarse `0.0.0.0/0`; para producción restringe el origen y
-   coloca un proxy HTTPS delante de Streamlit.
+El nivel gratuito ofrece dos unidades y solo una sirve para esta aplicación:
 
-### 2. Preparar el servidor
+| Unidad | Recursos | Apta |
+|---|---|:--:|
+| `VM.Standard.A1.Flex` (ARM) | Hasta 4 OCPU y 24 GB | Sí |
+| `VM.Standard.E2.1.Micro` (x86) | 1 OCPU y 1 GB | No |
 
-```bash
-ssh opc@<IP_PUBLICA>
-git clone <URL_DEL_REPOSITORIO_GITHUB> rag-alura
-cd rag-alura
-chmod +x deploy/oci/install-docker.sh
-./deploy/oci/install-docker.sh
+Chroma, ONNX Runtime y Streamlit no entran en 1 GB de memoria: el contenedor se detiene por
+falta de memoria durante la indexación inicial.
+
+La unidad A1 es ARM. Las dependencias del proyecto (`onnxruntime`, `grpcio`, `tokenizers`,
+`numpy`) publican ruedas `manylinux aarch64` y la imagen se construye dentro de la propia
+instancia, así que la arquitectura no requiere ajustes.
+
+### 2. Crear la instancia
+
+1. Consola de OCI → **Compute** → **Instances** → **Create instance**.
+2. **Imagen:** Oracle Linux 9.
+3. **Unidad:** serie *Ampere* → `VM.Standard.A1.Flex` → 2 OCPU y 12 GB.
+4. **Red:** asigna una IP pública.
+5. **Claves SSH:** carga tu clave pública.
+6. **Volumen de arranque:** conserva el tamaño y el VPU predeterminados.
+7. Deja desactivadas *Instancia blindada* e *Informática confidencial*.
+
+La etiqueta **Siempre gratis elegible** debe permanecer visible junto a la unidad. Si
+desaparece al modificar un valor, ese valor sale del nivel gratuito. Subir el VPU del volumen
+de arranque es el ajuste que más veces lo provoca.
+
+Mientras la cuenta no se actualice a *Pay As You Go*, la consola bloquea la creación de
+recursos fuera del nivel gratuito en lugar de facturarlos.
+
+Si la creación falla con `Out of host capacity`, la capacidad A1 gratuita está agotada en ese
+dominio de disponibilidad. Prueba otro dominio o repite más tarde; no es un error de
+configuración.
+
+### 3. Abrir el puerto 8501 en las dos capas
+
+Oracle Linux filtra en el sistema operativo además del filtrado de red de OCI. Si solo se abre
+una de las dos capas, la aplicación queda inaccesible sin mensaje de error.
+
+Capa de red — Networking → VCN → Subnet → Security List → **Add Ingress Rule**:
+
+```text
+Source: 0.0.0.0/0    IP Protocol: TCP    Destination Port Range: 8501
 ```
 
-Cierra la sesión SSH y vuelve a ingresar para aplicar el grupo `docker`.
-
-Si `firewalld` está activo, habilita también el puerto en el sistema operativo:
+Capa del sistema operativo, dentro de la instancia:
 
 ```bash
 sudo firewall-cmd --permanent --add-port=8501/tcp
 sudo firewall-cmd --reload
 ```
 
-### 3. Configurar y levantar
+`0.0.0.0/0` sirve para una demostración. Restringe el origen antes de exponer documentación
+real.
+
+### 4. Instalar Docker
+
+```bash
+ssh opc@<IP_PUBLICA>
+git clone https://github.com/BryanGuerron/rag.git rag-alura
+cd rag-alura
+chmod +x deploy/oci/install-docker.sh
+./deploy/oci/install-docker.sh
+```
+
+Cierra la sesión SSH y vuelve a ingresar para que se aplique el grupo `docker`.
+
+### 5. Configurar las credenciales
+
+`.env` está excluido del repositorio, así que se crea en el servidor:
 
 ```bash
 cp .env.example .env
-nano .env
+nano .env   # agrega GOOGLE_API_KEY
+```
+
+Conviene usar una clave distinta de la del entorno local: revocar la del servidor no debe
+dejar sin acceso al desarrollo.
+
+### 6. Construir y levantar
+
+```bash
 docker compose -f deploy/oci/compose.yaml up -d --build
 docker compose -f deploy/oci/compose.yaml ps
 ```
 
-La aplicación queda disponible en `http://<IP_PUBLICA>:8501`.
+El primer arranque indexa los cinco PDF contra la API de embeddings. Es la etapa más lenta y
+puede activar los reintentos por cuota descritos en *Qué puede hacer*. Sigue el progreso antes
+de darlo por bloqueado:
 
-### 4. Verificar
+```bash
+docker compose -f deploy/oci/compose.yaml logs -f
+```
+
+### 7. Verificar
 
 ```bash
 curl http://127.0.0.1:8501/_stcore/health
-docker compose -f deploy/oci/compose.yaml logs --tail=100
 ```
 
-El health check debe responder `ok`.
+Debe responder `ok`. La aplicación queda disponible en `http://<IP_PUBLICA>:8501`.
 
-## Evidencia de despliegue
+Si el health check responde `ok` pero el navegador no alcanza la aplicación, falta una de las
+dos capas de firewall del paso 3.
 
-Este repositorio incluye la configuración, pero la evidencia debe actualizarse después de crear
-la instancia con credenciales OCI reales:
+El volumen `rag-data` conserva documentos e índice entre reinicios y `restart: unless-stopped`
+levanta el contenedor cuando la instancia se reinicia.
 
-- URL pública: `PENDIENTE_DE_DEPLOY`
-- Captura: agregar en `docs/deployment/` y enlazarla aquí
-- Fecha de verificación: `PENDIENTE`
+## Despliegue en la nube
 
-No se incluye una URL ficticia: la validación del proyecto exige una instancia accesible y una
-captura real.
+![Archivo Vivo en ejecución](docs/deployment/local-test.PNG)
+
+Respuesta fundamentada con las fuentes documentales desplegadas: cada cita enlaza al PDF y lo
+abre en la página exacta que respalda la afirmación.
+
+<!-- Captura alternativa. Sube la imagen a docs/deployment/, ajusta el nombre si usas otro y
+     quita los delimitadores de comentario de estas tres líneas para mostrarla.
+![Archivo Vivo en OCI Compute](docs/deployment/oci-deploy.PNG)
+
+Aplicación servida desde una instancia OCI Compute del nivel Always Free.
+-->
+
+| Componente | Configuración |
+|---|---|
+| Unidad | `VM.Standard.A1.Flex` — 2 OCPU, 12 GB, Always Free |
+| Sistema operativo | Oracle Linux 9 |
+| Publicación | Docker Compose (`deploy/oci/compose.yaml`) sobre el puerto 8501 |
+| Persistencia | Volumen `rag-data` montado en `/app/data` |
+
+<!-- URL pública de la instancia: completar aquí cuando esté accesible. -->
 
 ## Consideraciones de seguridad
 
@@ -286,6 +362,7 @@ captura real.
 │   └── web_search.py            Búsqueda pública opcional
 ├── tests/                       Pruebas unitarias
 ├── docs/                        Corpus PDF inicial
+├── docs/deployment/             Capturas del despliegue
 ├── deploy/oci/                  Docker Compose e instalación en OCI
 ├── Dockerfile
 └── .github/workflows/ci.yml     Lint, pruebas y compilación

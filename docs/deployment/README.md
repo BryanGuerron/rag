@@ -1,8 +1,13 @@
-# Evidencia de despliegue
+# Capturas del despliegue
 
-Guarda aquí la captura real de la aplicación ejecutándose en OCI Compute. Después actualiza la
-sección **Evidencia de despliegue** del `README.md` principal con la URL pública, el nombre de la
-captura y la fecha de verificación.
+Imágenes que ilustran la sección **Despliegue en la nube** del `README.md` principal.
 
-No almacenes claves privadas, archivos `.env`, OCIDs sensibles ni capturas que expongan
+| Archivo | Contenido |
+|---|---|
+| `local-test.PNG` | Interfaz respondiendo con citas enlazadas a la página de cada documento |
+
+Para cambiar la captura que se muestra, agrega la imagen a esta carpeta y edita el bloque
+comentado de la sección **Despliegue en la nube**.
+
+No almacenes aquí claves privadas, archivos `.env`, OCID sensibles ni capturas que expongan
 credenciales de OCI.
