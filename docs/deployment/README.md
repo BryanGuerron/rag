@@ -1,13 +1,14 @@
-# Capturas del despliegue
+# 🖼️ Capturas del despliegue
 
 Imágenes que ilustran la sección **Despliegue en la nube** del `README.md` principal.
 
 | Archivo | Contenido |
 |---|---|
-| `local-test.PNG` | Interfaz respondiendo con citas enlazadas a la página de cada documento |
+| `cloud-1.PNG` | Respuesta con las fuentes desplegadas y citas enlazadas por página |
+| `cloud-2.PNG` | Pantalla principal con el estado del índice y una respuesta citada |
 
-Para cambiar la captura que se muestra, agrega la imagen a esta carpeta y edita el bloque
-comentado de la sección **Despliegue en la nube**.
+Para cambiar o agregar una captura, coloca la imagen en esta carpeta y edita las líneas
+`![...]` de esa sección.
 
 No almacenes aquí claves privadas, archivos `.env`, OCID sensibles ni capturas que expongan
 credenciales de OCI.

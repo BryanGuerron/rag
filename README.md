@@ -1,10 +1,10 @@
-# Archivo Vivo: asistente RAG para PDF y CSV
+# 📚 Archivo Vivo: asistente RAG para PDF y CSV
 
 Aplicación web que responde preguntas con evidencia extraída de documentos PDF y CSV. Cada
 respuesta documental incluye el archivo y la página o fila utilizada. Si la información no existe
 en el corpus, la aplicación solicita permiso antes de consultar fuentes públicas en la web.
 
-## Inicio rápido
+## 🚀 Inicio rápido
 
 Requisitos: Python 3.10 a 3.12 y una clave de [Google AI Studio](https://aistudio.google.com/apikey).
 El modelo generativo y los embeddings usan la API de Gemini.
@@ -29,7 +29,7 @@ Abre `http://localhost:8501`. Los cinco PDF de `docs/` se indexan automáticamen
 primer inicio. La primera indexación consume la API de embeddings; los siguientes reinicios
 reutilizan Chroma y no vuelven a procesar archivos sin cambios.
 
-## Qué puede hacer
+## ✨ Qué puede hacer
 
 | Capacidad | Comportamiento |
 |---|---|
@@ -48,7 +48,29 @@ reutilizan Chroma y no vuelven a procesar archivos sin cambios.
 Los PDF escaneados sin texto seleccionable no se procesan. Deben pasar por OCR antes de ser
 cargados.
 
-## Corpus de demostración
+## ☁️ Despliegue en la nube
+
+![Archivo Vivo respondiendo con citas enlazadas](docs/deployment/cloud-1.PNG)
+
+Respuesta con las fuentes desplegadas: cada cita enlaza al PDF y lo abre en la página exacta
+que respalda la afirmación.
+
+![Pantalla principal de Archivo Vivo](docs/deployment/cloud-2.PNG)
+
+Pantalla principal con el estado del índice y una respuesta citando tres documentos.
+
+| Componente | Configuración |
+|---|---|
+| Unidad | `VM.Standard.A1.Flex` — 2 OCPU, 12 GB, Always Free |
+| Sistema operativo | Oracle Linux 9 |
+| Publicación | Docker Compose (`deploy/oci/compose.yaml`) sobre el puerto 8501 |
+| Persistencia | Volumen `rag-data` montado en `/app/data` |
+
+Los pasos para reproducirlo están en [Despliegue en OCI Compute](#-despliegue-en-oci-compute-nivel-gratuito).
+
+<!-- URL pública de la instancia: completar aquí cuando esté accesible. -->
+
+## 📄 Corpus de demostración
 
 Los cinco PDF de `docs/` son documentación interna de **Santo Pegasus Soluciones**, una
 empresa **ficticia** creada como escenario de ejemplo: onboarding, guías de ingeniería
@@ -59,7 +81,7 @@ corpus realista sobre el que demostrar recuperación con citas. La interfaz adop
 y su identidad visual para que la demostración resulte coherente; sustituye ambos si vas a
 usar la aplicación con documentación propia.
 
-## Arquitectura
+## 🏗️ Arquitectura
 
 ```mermaid
 flowchart LR
@@ -78,7 +100,7 @@ flowchart LR
     P -->|No| N[Finaliza sin fuente externa]
 ```
 
-### Flujo documental
+### 🔍 Flujo documental
 
 1. `DocumentLoader` extrae una unidad por página del PDF o por fila del CSV.
 2. `RecursiveCharacterTextSplitter` divide unidades extensas sin perder sus metadatos.
@@ -93,7 +115,7 @@ flowchart LR
 7. Cada cita se muestra como enlace al documento original, anclado con `#page=N` para que el
    visor del navegador abra directamente la página citada y la afirmación pueda comprobarse.
 
-### Apertura de documentos citados
+### 🔗 Apertura de documentos citados
 
 Streamlit solo publica archivos ubicados en `static/`, así que los documentos indexados se
 replican allí la primera vez que se cargan. El original en `docs/` o `data/uploads/` sigue
@@ -103,7 +125,7 @@ excluida del repositorio y de la imagen Docker.
 El ancla `#page=N` la interpreta el visor PDF integrado del navegador. Los CSV se enlazan sin
 ancla porque la fila no es direccionable.
 
-### Persistencia e idempotencia
+### 💾 Persistencia e idempotencia
 
 ```text
 data/
@@ -115,7 +137,7 @@ data/
 Un archivo sin cambios no se vuelve a indexar. Si cambia su contenido conservando el mismo
 nombre, los nuevos fragmentos se agregan y los identificadores anteriores se eliminan.
 
-## Ejemplos de preguntas
+## 💬 Ejemplos de preguntas
 
 Los documentos incluidos permiten responder, entre otras, estas preguntas:
 
@@ -131,7 +153,7 @@ Los documentos incluidos permiten responder, entre otras, estas preguntas:
 La interfaz muestra las citas exactas. Los textos anteriores son ejemplos y no sustituyen la
 respuesta generada a partir de los fragmentos recuperados.
 
-## Identidad visual
+## 🎨 Identidad visual
 
 La interfaz usa un tema oscuro con acentos en cian y violeta sobre paneles traslúcidos,
 alineado con el escenario ficticio descrito arriba. Todo el sistema visual vive en
@@ -147,7 +169,7 @@ alineado con el escenario ficticio descrito arriba. Todo el sistema visual vive 
 Si `assets/theme.css` no está disponible, la aplicación arranca igual con el tema base
 declarado en `.streamlit/config.toml`.
 
-## Configuración
+## ⚙️ Configuración
 
 Copia `.env.example` a `.env` y ajusta estas variables:
 
@@ -169,7 +191,7 @@ Copia `.env.example` a `.env` y ajusta estas variables:
 
 No publiques `.env`. El archivo está excluido por `.gitignore` y la imagen Docker no lo copia.
 
-## Calidad
+## ✅ Calidad
 
 ```powershell
 python -m ruff check app.py src tests
@@ -182,7 +204,7 @@ filtrado por relevancia, rechazo de respuestas sin citas, historial conversacion
 de fuentes web, división en lotes de embeddings, reintentos ante límites de cuota y
 construcción de enlaces por página hacia los documentos citados.
 
-## Docker
+## 🐳 Docker
 
 ```powershell
 docker build -t rag-alura .
@@ -191,7 +213,7 @@ docker run --rm -p 8501:8501 --env-file .env -v rag-data:/app/data rag-alura
 
 El volumen `rag-data` evita perder archivos cargados y embeddings al reemplazar el contenedor.
 
-## Despliegue en OCI Compute (nivel gratuito)
+## 🌩️ Despliegue en OCI Compute (nivel gratuito)
 
 Paso a paso sobre el nivel **Always Free** de Oracle Cloud. La receta usa una VM Oracle Linux
 con Docker Compose y no requiere servicios OCI administrados adicionales.
@@ -307,47 +329,7 @@ dos capas de firewall del paso 3.
 El volumen `rag-data` conserva documentos e índice entre reinicios y `restart: unless-stopped`
 levanta el contenedor cuando la instancia se reinicia.
 
-## Despliegue en la nube
-
-![Archivo Vivo en ejecución](docs/deployment/local-test.PNG)
-
-Respuesta fundamentada con las fuentes documentales desplegadas: cada cita enlaza al PDF y lo
-abre en la página exacta que respalda la afirmación.
-
-<!-- Captura alternativa. Sube la imagen a docs/deployment/, ajusta el nombre si usas otro y
-     quita los delimitadores de comentario de estas tres líneas para mostrarla.
-![Archivo Vivo en OCI Compute](docs/deployment/oci-deploy.PNG)
-
-Aplicación servida desde una instancia OCI Compute del nivel Always Free.
--->
-
-| Componente | Configuración |
-|---|---|
-| Unidad | `VM.Standard.A1.Flex` — 2 OCPU, 12 GB, Always Free |
-| Sistema operativo | Oracle Linux 9 |
-| Publicación | Docker Compose (`deploy/oci/compose.yaml`) sobre el puerto 8501 |
-| Persistencia | Volumen `rag-data` montado en `/app/data` |
-
-<!-- URL pública de la instancia: completar aquí cuando esté accesible. -->
-
-## Consideraciones de seguridad
-
-- La aplicación no incluye autenticación. Agregala antes de exponer documentos privados.
-- Los PDF actuales contienen marcas de uso interno o confidencial. Confirma que tienes permiso
-  para publicarlos antes de desplegar una demo abierta.
-- Las preguntas, fragmentos recuperados y extractos web se envían al proveedor del modelo.
-- **La apertura de documentos citados los expone completos por HTTP.** Cualquiera que alcance
-  la aplicación puede descargar un documento indexado desde `/app/static/<archivo>` sin pasar
-  por el asistente. Antes solo eran accesibles los fragmentos recuperados. Si el corpus es
-  confidencial, agrega autenticación antes de exponer la aplicación o desactiva
-  `server.enableStaticServing`: las citas vuelven a mostrarse como texto y nada más deja de
-  funcionar.
-- La búsqueda web no se ejecuta automáticamente ni se mezcla silenciosamente con las fuentes
-  documentales.
-- Para producción, termina TLS en un load balancer o proxy, restringe el puerto `8501` y almacena
-  `GOOGLE_API_KEY` en OCI Vault.
-
-## Estructura del repositorio
+## 🗂️ Estructura del repositorio
 
 ```text
 .
